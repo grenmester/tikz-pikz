@@ -1,0 +1,109 @@
+\documentclass[tikz, rgb]{standalone}
+
+\begin{document}
+\begin{tikzpicture}[x=.5in, y=.5in]
+  % Colors
+  \definecolor{blank}{hsb}{0,0,1}
+  \definecolor{background}{hsb}{.25,.25,1}
+  \definecolor{eye}{hsb}{.14,.5,1}
+
+  % Configurations
+  \tikzset{stroke/.style={line width=1.3ex, draw=#1}}
+
+  % Drawing objects
+  % Usage: \regSakuraPetal{<scale>}
+  \newcommand{\regSakuraPetal}[1]{%
+    .. controls +({-1.9*#1},{2.6*#1}) and +({-0.9*#1},{0.5*#1}) .. +({0*#1},{2.5*#1})
+    .. controls +({0.9*#1},{0.5*#1}) and +({1.9*#1},{2.6*#1}) .. cycle
+  }
+  % Usage: \regThinPetal{<scale>}
+  \newcommand{\regThinPetal}[1]{%
+    .. controls +({-0.1*#1},{0.6*#1}) and +({-1.1*#1},{-0.2*#1}) .. +({0*#1},{2.8*#1})
+    .. controls +({1.1*#1},{-0.2*#1}) and +({0.1*#1},{0.6*#1}) .. cycle
+  }
+  % Usage: \regWidePetal{<scale>}
+  \newcommand{\regWidePetal}[1]{%
+    .. controls +({-0*#1},{0.1*#1}) and +({-2.2*#1},{-0.3*#1}) .. +({0*#1},{2.8*#1})
+    .. controls +({2.2*#1},{-0.3*#1}) and +({0*#1},{0.1*#1}) .. cycle
+  }
+  % Usage: \fibRoundPetal{<scale>}
+  \newcommand{\fibRoundPetal}[1]{%
+    .. controls +({-1.9*#1},{0.2*#1}) and +({-2.1*#1},{-0.3*#1}) .. +({0*#1},{2.8*#1})
+    .. controls +({2.1*#1},{-0.3*#1}) and +({1.9*#1},{0.2*#1}) .. cycle
+  }
+  % Usage: \fibSharpPetal{<scale>}
+  \newcommand{\fibSharpPetal}[1]{%
+    .. controls +({-1.9*#1},{0.2*#1}) and +({-0.5*#1},{-0.5*#1}) .. +({0*#1},{2.8*#1})
+    .. controls +({0.5*#1},{-0.5*#1}) and +({1.9*#1},{0.2*#1}) .. cycle
+  }
+  % Usage: \fibTriangularPetal{<scale>}
+  \newcommand{\fibTriangularPetal}[1]{%
+    .. controls +({-2.2*#1},{0*#1}) and +({-1.1*#1},{-0.3*#1}) .. +({0*#1},{2.8*#1})
+    .. controls +({1.1*#1},{-0.3*#1}) and +({2.2*#1},{0*#1}) .. cycle
+  }
+  % Usage: \petal{<center>}{<petal type>}{<petal color>}{<angle>}{<scale>}
+  \newcommand{\petal}[5]{%
+    \draw [fill=#3, rotate around={#4:#1}] #1 #2{#5};
+    \draw [stroke, rounded corners, rotate around={#4:#1}] #1 #2{#5};
+  }
+  % Usage: \regFlower{<center>}{<petal type>}{<petal color>}{<num petals>}
+  \newcommand{\regFlower}[4]{%
+    % Petals
+    \foreach \i in {1,...,#4}{
+      \petal{#1}{#2}{#3}{360*\i/(#4)}{1}
+    }
+    % Eye
+    \draw [fill=eye] #1 circle (0.6);
+    \draw [stroke] #1 circle (0.6);
+  }
+  % Usage: \fibFlower{<center>}{<petal type>}{<petal color>}{<num petals>}
+  \newcommand{\fibFlower}[4]{%
+    % Petals
+    \foreach \i in {0,...,#4}{
+      \petal{#1}{#2}{#3}{155.746*\i}{sqrt(1-\i/(#4)*\i/(#4))}
+    }
+    % Eye
+    \draw [fill=eye] #1 circle (0.25);
+    \draw [stroke] #1 circle (0.25);
+  }
+  % Usage: \flowerGrid{<num columns>}{<num rows>}
+  \newcommand{\flowerGrid}[2]{%
+    % Bounding box
+    \clip [rounded corners=1ex, preaction={fill=blank}]
+    (0,0) rectangle (8*#1,8*#2);
+    % Flower options
+    \pgfmathdeclarerandomlist{flowerChoices}{{1}{2}{3}{4}{5}{6}}
+    % Flower grid
+    \foreach \x in {1,...,#1}{
+      \foreach \y in {1,...,#2}{
+        % Bounding circle
+        \draw [fill=background] (8*\x-4,8*\y-4) circle (3.4);
+        \draw [stroke] (8*\x-4,8*\y-4) circle (3.4);
+        % Petal color
+        \pgfmathparse{rnd}
+        \definecolor{petal}{hsb}{\pgfmathresult,.4,1}
+        % Flower type
+        \pgfmathrandomitem{\flowerChoice}{flowerChoices}
+        \if \flowerChoice 1 % Regular flower with sakura petals
+          \regFlower{(8*\x-4,8*\y-4)}{\regSakuraPetal}{petal}{5}
+        \fi
+        \if \flowerChoice 2 % Regular flower with thin petals
+          \regFlower{(8*\x-4,8*\y-4)}{\regThinPetal}{petal}{10}
+        \fi
+        \if \flowerChoice 3 % Regular flower with wide petals
+          \regFlower{(8*\x-4,8*\y-4)}{\regWidePetal}{petal}{5}
+        \fi
+        \if \flowerChoice 4 % Fibonacci flower with round petals
+          \fibFlower{(8*\x-4,8*\y-4)}{\fibRoundPetal}{petal}{21}
+        \fi
+        \if \flowerChoice 5 % Fibonacci flower with sharp petals
+          \fibFlower{(8*\x-4,8*\y-4)}{\fibSharpPetal}{petal}{34}
+        \fi
+        \if \flowerChoice 6 % Fibonacci flower with triangular petals
+          \fibFlower{(8*\x-4,8*\y-4)}{\fibTriangularPetal}{petal}{34}
+        \fi
+      }
+    }
+  }
+\end{tikzpicture}
+\end{document}
