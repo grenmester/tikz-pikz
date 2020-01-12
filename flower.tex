@@ -41,66 +41,75 @@
     .. controls +({-2.2*#1},{0*#1}) and +({-1.1*#1},{-0.3*#1}) .. +({0*#1},{2.8*#1})
     .. controls +({1.1*#1},{-0.3*#1}) and +({2.2*#1},{0*#1}) .. cycle
   }
-  % Usage: \petal{<center>}{<petal type>}{<petal color>}{<angle>}{<scale>}
-  \newcommand{\petal}[5]{%
-    \draw [fill=#3, rotate around={#4:#1}] #1 #2{#5};
-    \draw [stroke, rounded corners, rotate around={#4:#1}] #1 #2{#5};
+  % Usage: \petal{<center>}{<petal type>}{<petal inner color>}{<petal outer color>}{<angle>}{<scale>}
+  \newcommand{\petal}[6]{%
+    \shadedraw [inner color=#3, outer color=#4, rotate around={#5:#1}] #1 #2{#6};
+    \draw [stroke, rounded corners, rotate around={#5:#1}] #1 #2{#6};
   }
-  % Usage: \regFlower{<center>}{<petal type>}{<petal color>}{<num petals>}
-  \newcommand{\regFlower}[4]{%
+  % Usage: \regFlower{<center>}{<petal type>}{<petal inner color>}{<petal outer color>}{<num petals>}
+  \newcommand{\regFlower}[5]{%
     % Petals
-    \foreach \i in {1,...,#4}{
-      \petal{#1}{#2}{#3}{360*\i/(#4)}{1}
+    \foreach \i in {1,...,#5}{
+      \petal{#1}{#2}{#3}{#4}{360*\i/(#5)}{1}
     }
     % Eye
     \draw [fill=eye] #1 circle (0.6);
     \draw [stroke] #1 circle (0.6);
   }
-  % Usage: \fibFlower{<center>}{<petal type>}{<petal color>}{<num petals>}
-  \newcommand{\fibFlower}[4]{%
+  % Usage: \fibFlower{<center>}{<petal type>}{<petal inner color>}{<petal outer color>}{<num petals>}
+  \newcommand{\fibFlower}[5]{%
     % Petals
-    \foreach \i in {0,...,#4}{
-      \petal{#1}{#2}{#3}{155.746*\i}{sqrt(1-\i/(#4)*\i/(#4))}
+    \foreach \i in {0,...,#5}{
+      \petal{#1}{#2}{#3}{#4}{155.746*\i}{sqrt(1-\i/(#5)*\i/(#5))}
     }
     % Eye
     \draw [fill=eye] #1 circle (0.25);
     \draw [stroke] #1 circle (0.25);
   }
-  % Usage: \flowerGrid{<num columns>}{<num rows>}
-  \newcommand{\flowerGrid}[2]{%
+  % Usage: \randomFlowerGrid{<num columns>}{<num rows>}
+  \newcommand{\randomFlowerGrid}[2]{%
     % Bounding box
     \clip [rounded corners=1ex, preaction={fill=blank}]
     (0,0) rectangle (8*#1,8*#2);
     % Flower options
-    \pgfmathdeclarerandomlist{flowerChoices}{{1}{2}{3}{4}{5}{6}}
+    \pgfmathdeclarerandomlist{flowerOptions}{{1}{2}{3}{4}{5}{6}}
+    % Shade options
+    \pgfmathdeclarerandomlist{shadeOptions}{{0}{1}}
     % Flower grid
     \foreach \x in {1,...,#1}{
       \foreach \y in {1,...,#2}{
         % Bounding circle
         \draw [fill=background] (8*\x-4,8*\y-4) circle (3.4);
         \draw [stroke] (8*\x-4,8*\y-4) circle (3.4);
-        % Petal color
+        % Shade type
+        \pgfmathrandomitem{\shadeOption}{shadeOptions}
         \pgfmathparse{rnd}
-        \definecolor{petal}{hsb}{\pgfmathresult,.4,1}
+        \if \shadeOption 0
+          \definecolor{inner}{hsb}{\pgfmathresult,.4,1}
+          \definecolor{outer}{hsb}{\pgfmathresult,.4,1}
+        \else
+          \definecolor{inner}{hsb}{\pgfmathresult,.7,1}
+          \definecolor{outer}{hsb}{\pgfmathresult,.2,1}
+        \fi
         % Flower type
-        \pgfmathrandomitem{\flowerChoice}{flowerChoices}
-        \if \flowerChoice 1 % Regular flower with sakura petals
-          \regFlower{(8*\x-4,8*\y-4)}{\regSakuraPetal}{petal}{5}
+        \pgfmathrandomitem{\flowerOption}{flowerOptions}
+        \if \flowerOption 1 % Regular flower with sakura petals
+          \regFlower{(8*\x-4,8*\y-4)}{\regSakuraPetal}{inner}{outer}{5}
         \fi
-        \if \flowerChoice 2 % Regular flower with thin petals
-          \regFlower{(8*\x-4,8*\y-4)}{\regThinPetal}{petal}{10}
+        \if \flowerOption 2 % Regular flower with thin petals
+          \regFlower{(8*\x-4,8*\y-4)}{\regThinPetal}{inner}{outer}{10}
         \fi
-        \if \flowerChoice 3 % Regular flower with wide petals
-          \regFlower{(8*\x-4,8*\y-4)}{\regWidePetal}{petal}{5}
+        \if \flowerOption 3 % Regular flower with wide petals
+          \regFlower{(8*\x-4,8*\y-4)}{\regWidePetal}{inner}{outer}{5}
         \fi
-        \if \flowerChoice 4 % Fibonacci flower with round petals
-          \fibFlower{(8*\x-4,8*\y-4)}{\fibRoundPetal}{petal}{21}
+        \if \flowerOption 4 % Fibonacci flower with round petals
+          \fibFlower{(8*\x-4,8*\y-4)}{\fibRoundPetal}{inner}{outer}{21}
         \fi
-        \if \flowerChoice 5 % Fibonacci flower with sharp petals
-          \fibFlower{(8*\x-4,8*\y-4)}{\fibSharpPetal}{petal}{34}
+        \if \flowerOption 5 % Fibonacci flower with sharp petals
+          \fibFlower{(8*\x-4,8*\y-4)}{\fibSharpPetal}{inner}{outer}{34}
         \fi
-        \if \flowerChoice 6 % Fibonacci flower with triangular petals
-          \fibFlower{(8*\x-4,8*\y-4)}{\fibTriangularPetal}{petal}{34}
+        \if \flowerOption 6 % Fibonacci flower with triangular petals
+          \fibFlower{(8*\x-4,8*\y-4)}{\fibTriangularPetal}{inner}{outer}{34}
         \fi
       }
     }
